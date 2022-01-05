@@ -54,18 +54,23 @@ class Room:
             self,
             filename_map: str
     ):
+        # Карта комнаты.
         self.__map = pytmx.load_pygame(filename_map)
 
     def convert_coord(self, x: float | int, y: float | int):
+        """Конвертирует координаты формата x и y
+        в координаты формата row и col"""
         return y // self.__map.tileheight, x // self.__map.tilewidth
 
     def check_correct_x_y(self, x: float | int, y: float | int):
-        row, col = x // const.SIZE_BLOCK, y // const.SIZE_BLOCK
+        """Проверяет корректность координат в формате x и y."""
+        row, col = self.convert_coord(x, y)
         if self.check_correct_row_col(row, col):
             return True
         return False
 
     def draw(self, screen: pygame.Surface):
+        """Рисует карту на screen."""
         for row in range(self.__map.height):
             for col in range(self.__map.width):
                 image = self.__map.get_tile_image(row, col, 0)
@@ -79,6 +84,7 @@ class Room:
                     )
 
     def check_correct_row_col(self, row: int, col: int):
+        """Проверка корректности координат в формате row и col."""
         if row in range(self.__map.height) and col in range(self.__map.height):
             return True
         return False
@@ -117,18 +123,20 @@ class Room:
         return result
 
     def get_tile_rect(self, row: int, col: int):
+        """Возвращает прямоугольник клетки по координатам row и col"""
         return pygame.Rect(
             (col * self.__map.tilewidth, row * self.__map.tileheight),
             (self.__map.width, self.__map.height)
         )
 
     def get_map(self):
+        """Возвращает копию карты (пересоздание)."""
         return pytmx.load_pygame(self.__map.filename)
 
 
 class Level:
     def __init__(self, count_rows: int, count_cols: int):
-        self.matrix = list(
+        self.__matrix = list(
             map(
                 lambda _: list(
                     map(
@@ -139,42 +147,91 @@ class Level:
                 range(count_rows)
             )
         )
-        self.count_rows = count_rows
-        self.count_cols = count_cols
-        self.coord_current_room = None
+        self.__count_rows = count_rows
+        self.__count_cols = count_cols
+        self.__coord_current_room = None
+
+    def __check_error_correction_coord(self, row: int, col: int):
+        """Проверка на корректность координат. Если что-то не правильно, то
+        возбуждается ошибка."""
+        if int != type(row):
+            raise TypeError(
+                f'Переданный тип значения в аргументе row не int,'
+                f' а {type(row)}'
+            )
+        if int != type(col):
+            raise TypeError(
+                f'Переданный тип значения в аргументе col не int,'
+                f' а {type(col)}'
+            )
+        if row in range(self.__count_rows) and col in range(self.__count_cols):
+            raise ValueError(
+                f'Переданные координаты ({row}, {col}) не попадают в диапазон'
+                f'(0 <= row < {self.__count_rows},'
+                f' 0 <= col < {self.__count_cols}).'
+            )
 
     def check_correction_coord(self, row: int, col: int) -> bool:
-        if row in range(self.count_rows) and col in range(self.count_cols):
+        """Проверка на корректность координат."""
+        try:
+            self.__check_error_correction_coord(row, col)
             return True
-        return False
+        except ValueError:
+            return False
 
     def set_room(self, room: Room, row: int, col: int):
-        self.matrix[row][col] = room
+        """Ставит комнату на координаты row и col."""
+        if type(room) != Room:
+            raise ValueError('Переданная комната - не комната.')
+        self.__check_error_correction_coord(row, col)
+        self.__matrix[row][col] = room
 
     def set_current_room(self, row: int, col: int):
-        self.coord_current_room = None if self.matrix[row][col] is None else (
+        """Меняет текущую комнату на комнату, которая находиться
+        в матрицы по координатам row и col"""
+        self.__check_error_correction_coord(row, col)
+        self.__coord_current_room = None if self.__matrix[row][
+                                                col] is None else (
             row, col
         )
 
     def get_room(self, row: int, col: int) -> None | Room:
-        return self.matrix[row][col]
+        """Получить комнату по координатам."""
+        self.__check_error_correction_coord(row, col)
+        """Получить комнату по координатам формата row и col."""
+        return self.__matrix[row][col]
 
     def get_current_room(self) -> None | Room:
-        row, col = self.coord_current_room
+        """Получить текущую комнату."""
+        row, col = self.__coord_current_room
         return self.get_room(row, col)
 
     def displace_current_room(self, k_row: int, k_col: int):
-        row_current_room, col_current_room = self.coord_current_room
+        """Смещает текущую комнату на k_row, k_col."""
+        if type(k_row) != int:
+            raise TypeError(
+                'Переданный тип значения аргумента k_row не int, а '
+                f'{type(k_row)}.'
+            )
+        if type(k_col) != int:
+            raise TypeError(
+                'Переданный тип значения аргумента k_col не int, а '
+                f'{type(k_col)}.'
+            )
+        row_current_room, col_current_room = self.__coord_current_room
         row_current_room += k_row
         col_current_room += k_col
-        if (
-                self.check_correction_coord(row_current_room,
-                                            col_current_room) and
-                self.get_room(row_current_room, col_current_room) is not None
-        ):
-            self.coord_current_room = (row_current_room, col_current_room)
-            return True
-        return False
+        try:
+            self.__check_error_correction_coord(
+                row_current_room, col_current_room
+            )
+            if self.get_room(row_current_room, col_current_room) is not None:
+                self.__coord_current_room = (
+                    row_current_room, col_current_room
+                )
+                return True
+        except Exception:
+            return False
 
 
 class Entity(pygame.sprite.Sprite):
