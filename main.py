@@ -1,7 +1,4 @@
-import copy
 import os
-import random
-import sys
 
 import pygame
 import pytmx
@@ -55,11 +52,27 @@ class Room:
             filename_map: str
     ):
         # Карта комнаты.
+        if type(filename_map) != str:
+            raise TypeError(
+                'Был передан не правильный тип данных ('
+                f'должно быть str, а не {type(filename_map)}).'
+            )
+        # Карта комнаты.
         self.__map = pytmx.load_pygame(filename_map)
 
     def convert_coord(self, x: float | int, y: float | int):
         """Конвертирует координаты формата x и y
         в координаты формата row и col"""
+        if type(x) not in {float, int}:
+            raise TypeError(
+                'Аргумент x должен быть float, int,'
+                f' а не {type(x)}'
+            )
+        if type(y) not in {float, int}:
+            raise TypeError(
+                'Аргумент y должен быть float, int,'
+                f' а не {type(y)}'
+            )
         return y // self.__map.tileheight, x // self.__map.tilewidth
 
     def check_correct_x_y(self, x: float | int, y: float | int):
@@ -71,6 +84,11 @@ class Room:
 
     def draw(self, screen: pygame.Surface):
         """Рисует карту на screen."""
+        if not isinstance(screen, pygame.Surface):
+            raise TypeError(
+                'Аргумент screen не принадлежит типу Surface, а'
+                f' принадлежит к {type(screen)}'
+            )
         for row in range(self.__map.height):
             for col in range(self.__map.width):
                 image = self.__map.get_tile_image(row, col, 0)
@@ -91,8 +109,8 @@ class Room:
 
     def get_tile_range_connection_blocks(
             self,
-            point1,
-            point2,
+            point1: tuple[int | float, int | float] | list[int, float],
+            point2: tuple[int | float, int | float] | list[int, float],
             type_tile: str
     ):
         """Возвращает первую попавшеюся клетку, которая находиться в
@@ -136,6 +154,7 @@ class Room:
 
 class Level:
     def __init__(self, count_rows: int, count_cols: int):
+        # Матрица, в которой будут располагаться комнаты.
         self.__matrix = list(
             map(
                 lambda _: list(
@@ -149,7 +168,59 @@ class Level:
         )
         self.__count_rows = count_rows
         self.__count_cols = count_cols
+        # Координаты текущей комнаты.
         self.__coord_current_room = None
+
+    def set_matrix(
+            self,
+            matrix: list[list[None | Room]],
+            coord_current_room: tuple[int, int]
+    ):
+        """Ставить новую матрицу."""
+        if type(matrix) != list:
+            raise TypeError(
+                f'Аргумент matrix должен быть list, а не {type(matrix)}.'
+            )
+        if not matrix:
+            raise ValueError('Аргумент matrix не должен быть пустым.')
+        if set(
+            filter(
+                lambda element: type(element) != list,
+                matrix
+            )
+        ):
+            raise TypeError(
+                'Какой-то элемент аргумента matrix не list.'
+            )
+        if tuple(
+            filter(
+                lambda element1: set(
+                    filter(
+                        lambda element2: type(element2) not in {
+                            type(None), Room
+                        },
+                        element1
+                    )
+                ),
+                matrix
+            )
+        ):
+            raise TypeError(
+                'Элементы элементов аргумента matrix должны быть Room, None.'
+            )
+        if len(set(
+            map(
+                lambda element: len(element),
+                matrix
+            )
+        )) != 1:
+            raise ValueError(
+                'Длина элементов аргумента matrix должна быть одинаковой.'
+            )
+        self.__matrix = matrix
+        self.__count_rows = len(matrix)
+        self.__count_cols = len(matrix[0])
+        self.__coord_current_room = coord_current_room
 
     def __check_error_correction_coord(self, row: int, col: int):
         """Проверка на корректность координат. Если что-то не правильно, то
