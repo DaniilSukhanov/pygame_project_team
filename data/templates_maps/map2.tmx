@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="10" height="10" tilewidth="32" tileheight="32" infinite="0" nextlayerid="2" nextobjectid="1">
+ <properties>
+  <property name="type" value="shop"/>
+ </properties>
+ <tileset firstgid="1" source="tmw_desert_spacing2.tsx"/>
+ <tileset firstgid="16" source="tmw_desert_spacing.tsx"/>
+ <layer id="1" name="Слой тайлов 1" width="10" height="10">
+  <data encoding="base64" compression="zlib">
+   eJyTZGBgkCQS6xLAyOrwmYHOxmYOLnXUFiPGXmL8QUy4EIMBLg4M5Q==
+  </data>
+ </layer>
+</map>
