@@ -60,6 +60,9 @@ class Room:
         # Карта комнаты.
         self.__map = pytmx.load_pygame(filename_map)
 
+    def __repr__(self):
+        return f'{self.__class__} ({self.__map.properties["type"]})'
+
     def convert_coord(self, x: float | int, y: float | int):
         """Конвертирует координаты формата x и y
         в координаты формата row и col"""

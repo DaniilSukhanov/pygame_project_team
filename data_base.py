@@ -55,6 +55,21 @@ class DataBase:
         )
         self.con.commit()
 
+    def get_rooms_by_type(self, type_room: str | None = None):
+        if type_room is not None:
+            result = self.cur.execute(
+                """
+                SELECT path_template_room FROM templates_rooms
+                WHERE type_template_room = ?
+                """,
+                (type_room,)
+            ).fetchall()
+        else:
+            result = self.cur.execute(
+                """SELECT path_template_room FROM templates_rooms"""
+            ).fetchall()
+        return result
+
 
 class Parse:
     def __init__(self, filename):
