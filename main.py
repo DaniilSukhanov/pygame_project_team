@@ -460,7 +460,7 @@ def main():
     pygame.init()
     main_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     player_screen = pygame.Surface(main_screen.get_size())
-    room = Room('data/templates_maps/test_map.tmx')
+    room = Room('data/templates_maps/new_test_map.tmx')
     group = SpritesGroup()
     player = Player(
         510, 500, 30, load_image('hero.png', -1), 60, 0, '12', group
