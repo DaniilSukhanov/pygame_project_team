@@ -1,49 +1,5 @@
-import os
-
-import pygame
 import pytmx
-import const
-
-
-class GroupContainer:
-    """Класс написан на паттерне Singleton."""
-    __instance = None
-    __groups = {}
-
-    def __new__(cls):
-        if not hasattr(cls, '__instance'):
-            cls.__instance = super(GroupContainer, cls).__new__(cls)
-        return cls.__instance
-
-    def draw_group(self, screen, key):
-        self.__groups[key].draw(screen)
-
-    def add_group(self, key, group):
-        self.__groups[key] = group
-
-    def remove_group(self, key):
-        del self.__groups[key]
-
-    def get_group(self, key):
-        return self.__groups[key]
-
-    def get_all_groups(self):
-        return self.__groups.values()
-
-    def draw(self, screen):
-        for group in self.__groups.values():
-            group.draw(screen)
-
-
-class SpritesGroup(pygame.sprite.Group):
-    def __init__(self):
-        super().__init__()
-        self.disabled = False
-
-    def update(self, *args, **kwargs):
-        if not self.disabled:
-            for sprite in self.sprites():
-                sprite.update(*args, **kwargs)
+import pygame
 
 
 class Room:
@@ -92,8 +48,8 @@ class Room:
                 'Аргумент screen не принадлежит типу Surface, а'
                 f' принадлежит к {type(screen)}'
             )
-        for row in range(self.__map.height):
-            for col in range(self.__map.width):
+        for row in range(self.__map.width):
+            for col in range(self.__map.height):
                 image = self.__map.get_tile_image(row, col, 0)
                 if image is not None:
                     screen.blit(
@@ -106,7 +62,7 @@ class Room:
 
     def check_correct_row_col(self, row: int, col: int):
         """Проверка корректности координат в формате row и col."""
-        if row in range(self.__map.height) and col in range(self.__map.height):
+        if row in range(self.__map.height) and col in range(self.__map.width):
             return True
         return False
 
@@ -152,7 +108,7 @@ class Room:
 
     def get_map(self):
         """Возвращает копию карты (пересоздание)."""
-        return pytmx.load_pygame(self.__map.filename)
+        return self.__map
 
 
 class Level:
@@ -306,193 +262,3 @@ class Level:
                 return True
         except Exception:
             return False
-
-
-class Entity(pygame.sprite.Sprite):
-    def __init__(
-            self,
-            x: int | float,
-            y: int | float,
-            size_entity: float | int,
-            image: pygame.Surface,
-            speed_move: float | int,
-            hp: int,
-            name: str,
-            *groups
-    ):
-        super().__init__(*groups)
-        self.angle_view = 0
-        self.speed = speed_move / const.FPS
-        self.name = name
-        self.hp = hp
-        self.size_entity = size_entity
-        self.rect = pygame.Rect(
-            *map(lambda coord: coord - size_entity / 2, (x, y)),
-            self.size_entity, self.size_entity
-        )
-        self.image = pygame.transform.smoothscale(image, self.rect.size)
-
-    def set_position(self, x, y):
-        self.rect.center = (x, y)
-
-
-class Player(Entity):
-    def __init__(
-            self,
-            x: float | int,
-            y: float | int,
-            size_entity: float | int,
-            image: pygame.Surface,
-            speed_move: float | int,
-            hp: int,
-            name: str,
-            *groups
-    ):
-        super().__init__(x, y, size_entity, image, speed_move, hp, name,
-                         *groups)
-
-    def get_screen_player(self, width, height):
-        x, y = self.rect.center
-        screen_player = pygame.Rect(
-            (x - width / 2, y - height / 2),
-            (width, height)
-        )
-        return screen_player
-
-    def update(self, *args, **kwargs):
-        self.move(*args, **kwargs)
-
-    def move(
-            self,
-            room: Room,
-            direction: tuple[int | float, int | float]
-    ):
-        """Перемещение игрока."""
-        x_direction, y_direction = direction
-        # Сдвиг координат.
-        k_x = x_direction * self.speed
-        k_y = y_direction * self.speed
-        # Перебираем стороны по направлению (+row -> правая сторона)
-        for i, line in enumerate(self.__get_coord_line_rect_by_direction(
-                self.rect, direction
-        )):
-            if line is None:
-                continue
-            # Получаем клетку, которая является стеной.
-            connection_tile = room.get_tile_range_connection_blocks(
-                *map(
-                    lambda coord: room.convert_coord(*coord),
-                    line
-                ),
-                const.TYPE_BLOCK_WALL
-            )
-            if connection_tile is not None:
-                # Получаем противоположную по взгляду сторону (клетки)
-                opposite_sides_direction = \
-                    self.__get_coord_line_rect_by_direction(
-                        connection_tile,
-                        tuple(map(lambda x: -x, direction))
-                    )
-                if not i:
-                    x2 = line[0][0]
-                    x1 = opposite_sides_direction[0][0][0]
-                    k_x = x1 - x2
-                else:
-                    y2 = line[1][1]
-                    y1 = opposite_sides_direction[1][1][1]
-                    k_y = y1 - y2
-        self.rect.move_ip(k_x, k_y)
-
-    @staticmethod
-    def __get_coord_line_rect_by_direction(
-            rect: pygame.Rect,
-            direction: tuple[int | float, int | float]
-    ):
-        result = []
-        if direction[0]:
-            if direction[0] > 0:
-                line = (
-                    rect.topright,
-                    rect.bottomright
-                )
-            else:
-                line = (
-                    rect.topleft,
-                    rect.bottomleft
-                )
-        else:
-            line = None
-        result.append(line)
-        if direction[1]:
-            if direction[1] > 0:
-                line = (
-                    rect.bottomleft,
-                    rect.bottomright
-                )
-            else:
-                line = (
-                    rect.topleft,
-                    rect.topright
-                )
-        else:
-            line = None
-        result.append(line)
-        return result
-
-
-def load_image(name: str, colorkey=None):
-    fullname = os.path.join('data', name)
-    # если файл не существует, то выходим
-    if not os.path.isfile(fullname):
-        raise FileNotFoundError(f"Файл с изображением '{fullname}' не найден")
-    image = pygame.image.load(fullname)
-    if colorkey is not None:
-        image = image.convert()
-        if colorkey == -1:
-            colorkey = image.get_at((0, 0))
-        image.set_colorkey(colorkey)
-    else:
-        image = image.convert_alpha()
-    return image
-
-
-def main():
-    pygame.init()
-    main_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-    player_screen = pygame.Surface(main_screen.get_size())
-    room = Room('data/templates_maps/test_map.tmx')
-    group = SpritesGroup()
-    player = Player(
-        510, 500, 30, load_image('hero.png', -1), 60, 0, '12', group
-    )
-    clock = pygame.time.Clock()
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (
-                    event.type == pygame.KEYDOWN and
-                    event.key == pygame.K_ESCAPE
-            ):
-                running = False
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            player.move(room, (0, -1))
-        if keys[pygame.K_a]:
-            player.move(room, (-1, 0))
-        if keys[pygame.K_s]:
-            player.move(room, (0, 1))
-        if keys[pygame.K_d]:
-            player.move(room, (1, 0))
-        main_screen.fill('black')
-        player_screen.fill('black')
-        room.draw(player_screen)
-        group.draw(player_screen)
-        main_screen.blit(player_screen, (0, 0),
-                         player.get_screen_player(*player_screen.get_size()))
-        pygame.display.flip()
-        clock.tick(const.FPS)
-    pygame.quit()
-
-
-if __name__ == '__main__':
-    main()
