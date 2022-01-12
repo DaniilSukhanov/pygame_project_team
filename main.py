@@ -1,8 +1,9 @@
 import os
 
 import pygame
-import pytmx
 import const
+from entitys import Mob, Player
+from levels import Room
 
 
 class GroupContainer:
@@ -46,400 +47,6 @@ class SpritesGroup(pygame.sprite.Group):
                 sprite.update(*args, **kwargs)
 
 
-class Room:
-    def __init__(
-            self,
-            filename_map: str
-    ):
-        # Карта комнаты.
-        if type(filename_map) != str:
-            raise TypeError(
-                'Был передан не правильный тип данных ('
-                f'должно быть str, а не {type(filename_map)}).'
-            )
-        # Карта комнаты.
-        self.__map = pytmx.load_pygame(filename_map)
-
-    def __repr__(self):
-        return f'{self.__class__} ({self.__map.properties["type"]})'
-
-    def convert_coord(self, x: float | int, y: float | int):
-        """Конвертирует координаты формата x и y
-        в координаты формата row и col"""
-        if type(x) not in {float, int}:
-            raise TypeError(
-                'Аргумент x должен быть float, int,'
-                f' а не {type(x)}'
-            )
-        if type(y) not in {float, int}:
-            raise TypeError(
-                'Аргумент y должен быть float, int,'
-                f' а не {type(y)}'
-            )
-        return y // self.__map.tileheight, x // self.__map.tilewidth
-
-    def check_correct_x_y(self, x: float | int, y: float | int):
-        """Проверяет корректность координат в формате x и y."""
-        row, col = self.convert_coord(x, y)
-        if self.check_correct_row_col(row, col):
-            return True
-        return False
-
-    def draw(self, screen: pygame.Surface):
-        """Рисует карту на screen."""
-        if not isinstance(screen, pygame.Surface):
-            raise TypeError(
-                'Аргумент screen не принадлежит типу Surface, а'
-                f' принадлежит к {type(screen)}'
-            )
-        for row in range(self.__map.height):
-            for col in range(self.__map.width):
-                image = self.__map.get_tile_image(row, col, 0)
-                if image is not None:
-                    screen.blit(
-                        image,
-                        (
-                            row * self.__map.tilewidth,
-                            col * self.__map.tilewidth
-                        )
-                    )
-
-    def check_correct_row_col(self, row: int, col: int):
-        """Проверка корректности координат в формате row и col."""
-        if row in range(self.__map.height) and col in range(self.__map.height):
-            return True
-        return False
-
-    def get_tile_range_connection_blocks(
-            self,
-            point1: tuple[int | float, int | float] | list[int, float],
-            point2: tuple[int | float, int | float] | list[int, float],
-            type_tile: str
-    ):
-        """Возвращает первую попавшеюся клетку, которая находиться в
-        диапазоне 2-х точек и имеет type_tile."""
-        if point1[0] == point2[0]:
-            row = point1[0]
-            step = 1 if point1[1] <= point2[1] else -1
-            for i in range(point1[1], point2[1] + step, step):
-                tile = self.get_tile_properties(row, i)
-                if tile is not None and tile['type'] == type_tile:
-                    return self.get_tile_rect(row, i)
-        elif point1[1] == point2[1]:
-            col = point1[1]
-            step = 1 if point1[0] <= point2[0] else -1
-            for i in range(point1[0], point2[0] + step, step):
-                tile = self.get_tile_properties(i, col)
-                if tile is not None and tile['type'] == type_tile:
-                    return self.get_tile_rect(i, col)
-        else:
-            raise ValueError('Одна из координат должна быть одинаковой.')
-
-    def get_tile_properties(self, row: int, col: int, layer=0) -> dict | None:
-        """Возвращает словарь свойств клетки."""
-        try:
-            result = self.__map.get_tile_properties(col, row, layer)
-        except Exception:
-            result = None
-        return result
-
-    def get_tile_rect(self, row: int, col: int):
-        """Возвращает прямоугольник клетки по координатам row и col"""
-        return pygame.Rect(
-            (col * self.__map.tilewidth, row * self.__map.tileheight),
-            (self.__map.width, self.__map.height)
-        )
-
-    def get_map(self):
-        """Возвращает копию карты (пересоздание)."""
-        return pytmx.load_pygame(self.__map.filename)
-
-
-class Level:
-    def __init__(self, count_rows: int, count_cols: int):
-        # Матрица, в которой будут располагаться комнаты.
-        self.__matrix = list(
-            map(
-                lambda _: list(
-                    map(
-                        lambda _: None,
-                        range(count_cols)
-                    )
-                ),
-                range(count_rows)
-            )
-        )
-        self.__count_rows = count_rows
-        self.__count_cols = count_cols
-        # Координаты текущей комнаты.
-        self.__coord_current_room = None
-
-    def set_matrix(
-            self,
-            matrix: list[list[None | Room]],
-            coord_current_room: tuple[int, int]
-    ):
-        """Ставить новую матрицу."""
-        if type(matrix) != list:
-            raise TypeError(
-                f'Аргумент matrix должен быть list, а не {type(matrix)}.'
-            )
-        if not matrix:
-            raise ValueError('Аргумент matrix не должен быть пустым.')
-        if set(
-            filter(
-                lambda element: type(element) != list,
-                matrix
-            )
-        ):
-            raise TypeError(
-                'Какой-то элемент аргумента matrix не list.'
-            )
-        if tuple(
-            filter(
-                lambda element1: set(
-                    filter(
-                        lambda element2: type(element2) not in {
-                            type(None), Room
-                        },
-                        element1
-                    )
-                ),
-                matrix
-            )
-        ):
-            raise TypeError(
-                'Элементы элементов аргумента matrix должны быть Room, None.'
-            )
-        if len(set(
-            map(
-                lambda element: len(element),
-                matrix
-            )
-        )) != 1:
-            raise ValueError(
-                'Длина элементов аргумента matrix должна быть одинаковой.'
-            )
-        self.__matrix = matrix
-        self.__count_rows = len(matrix)
-        self.__count_cols = len(matrix[0])
-        self.__coord_current_room = coord_current_room
-
-    def __check_error_correction_coord(self, row: int, col: int):
-        """Проверка на корректность координат. Если что-то не правильно, то
-        возбуждается ошибка."""
-        if int != type(row):
-            raise TypeError(
-                f'Переданный тип значения в аргументе row не int,'
-                f' а {type(row)}'
-            )
-        if int != type(col):
-            raise TypeError(
-                f'Переданный тип значения в аргументе col не int,'
-                f' а {type(col)}'
-            )
-        if row in range(self.__count_rows) and col in range(self.__count_cols):
-            raise ValueError(
-                f'Переданные координаты ({row}, {col}) не попадают в диапазон'
-                f'(0 <= row < {self.__count_rows},'
-                f' 0 <= col < {self.__count_cols}).'
-            )
-
-    def check_correction_coord(self, row: int, col: int) -> bool:
-        """Проверка на корректность координат."""
-        try:
-            self.__check_error_correction_coord(row, col)
-            return True
-        except ValueError:
-            return False
-
-    def set_room(self, room: Room, row: int, col: int):
-        """Ставит комнату на координаты row и col."""
-        if type(room) != Room:
-            raise ValueError('Переданная комната - не комната.')
-        self.__check_error_correction_coord(row, col)
-        self.__matrix[row][col] = room
-
-    def set_current_room(self, row: int, col: int):
-        """Меняет текущую комнату на комнату, которая находиться
-        в матрицы по координатам row и col"""
-        self.__check_error_correction_coord(row, col)
-        self.__coord_current_room = None if self.__matrix[row][
-                                                col] is None else (
-            row, col
-        )
-
-    def get_room(self, row: int, col: int) -> None | Room:
-        """Получить комнату по координатам."""
-        self.__check_error_correction_coord(row, col)
-        """Получить комнату по координатам формата row и col."""
-        return self.__matrix[row][col]
-
-    def get_current_room(self) -> None | Room:
-        """Получить текущую комнату."""
-        row, col = self.__coord_current_room
-        return self.get_room(row, col)
-
-    def displace_current_room(self, k_row: int, k_col: int):
-        """Смещает текущую комнату на k_row, k_col."""
-        if type(k_row) != int:
-            raise TypeError(
-                'Переданный тип значения аргумента k_row не int, а '
-                f'{type(k_row)}.'
-            )
-        if type(k_col) != int:
-            raise TypeError(
-                'Переданный тип значения аргумента k_col не int, а '
-                f'{type(k_col)}.'
-            )
-        row_current_room, col_current_room = self.__coord_current_room
-        row_current_room += k_row
-        col_current_room += k_col
-        try:
-            self.__check_error_correction_coord(
-                row_current_room, col_current_room
-            )
-            if self.get_room(row_current_room, col_current_room) is not None:
-                self.__coord_current_room = (
-                    row_current_room, col_current_room
-                )
-                return True
-        except Exception:
-            return False
-
-
-class Entity(pygame.sprite.Sprite):
-    def __init__(
-            self,
-            x: int | float,
-            y: int | float,
-            size_entity: float | int,
-            image: pygame.Surface,
-            speed_move: float | int,
-            hp: int,
-            name: str,
-            *groups
-    ):
-        super().__init__(*groups)
-        self.angle_view = 0
-        self.speed = speed_move / const.FPS
-        self.name = name
-        self.hp = hp
-        self.size_entity = size_entity
-        self.rect = pygame.Rect(
-            *map(lambda coord: coord - size_entity / 2, (x, y)),
-            self.size_entity, self.size_entity
-        )
-        self.image = pygame.transform.smoothscale(image, self.rect.size)
-
-    def set_position(self, x, y):
-        self.rect.center = (x, y)
-
-
-class Player(Entity):
-    def __init__(
-            self,
-            x: float | int,
-            y: float | int,
-            size_entity: float | int,
-            image: pygame.Surface,
-            speed_move: float | int,
-            hp: int,
-            name: str,
-            *groups
-    ):
-        super().__init__(x, y, size_entity, image, speed_move, hp, name,
-                         *groups)
-
-    def get_screen_player(self, width, height):
-        x, y = self.rect.center
-        screen_player = pygame.Rect(
-            (x - width / 2, y - height / 2),
-            (width, height)
-        )
-        return screen_player
-
-    def update(self, *args, **kwargs):
-        self.move(*args, **kwargs)
-
-    def move(
-            self,
-            room: Room,
-            direction: tuple[int | float, int | float]
-    ):
-        """Перемещение игрока."""
-        x_direction, y_direction = direction
-        # Сдвиг координат.
-        k_x = x_direction * self.speed
-        k_y = y_direction * self.speed
-        # Перебираем стороны по направлению (+row -> правая сторона)
-        for i, line in enumerate(self.__get_coord_line_rect_by_direction(
-                self.rect, direction
-        )):
-            if line is None:
-                continue
-            # Получаем клетку, которая является стеной.
-            connection_tile = room.get_tile_range_connection_blocks(
-                *map(
-                    lambda coord: room.convert_coord(*coord),
-                    line
-                ),
-                const.TYPE_BLOCK_WALL
-            )
-            if connection_tile is not None:
-                # Получаем противоположную по взгляду сторону (клетки)
-                opposite_sides_direction = \
-                    self.__get_coord_line_rect_by_direction(
-                        connection_tile,
-                        tuple(map(lambda x: -x, direction))
-                    )
-                if not i:
-                    x2 = line[0][0]
-                    x1 = opposite_sides_direction[0][0][0]
-                    k_x = x1 - x2
-                else:
-                    y2 = line[1][1]
-                    y1 = opposite_sides_direction[1][1][1]
-                    k_y = y1 - y2
-        self.rect.move_ip(k_x, k_y)
-
-    @staticmethod
-    def __get_coord_line_rect_by_direction(
-            rect: pygame.Rect,
-            direction: tuple[int | float, int | float]
-    ):
-        result = []
-        if direction[0]:
-            if direction[0] > 0:
-                line = (
-                    rect.topright,
-                    rect.bottomright
-                )
-            else:
-                line = (
-                    rect.topleft,
-                    rect.bottomleft
-                )
-        else:
-            line = None
-        result.append(line)
-        if direction[1]:
-            if direction[1] > 0:
-                line = (
-                    rect.bottomleft,
-                    rect.bottomright
-                )
-            else:
-                line = (
-                    rect.topleft,
-                    rect.topright
-                )
-        else:
-            line = None
-        result.append(line)
-        return result
-
-
 def load_image(name: str, colorkey=None):
     fullname = os.path.join('data', name)
     # если файл не существует, то выходим
@@ -460,11 +67,15 @@ def main():
     pygame.init()
     main_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
     player_screen = pygame.Surface(main_screen.get_size())
-    room = Room('data/templates_maps/test_map.tmx')
+    room = Room('data/templates_maps/map2.tmx')
     group = SpritesGroup()
-    player = Player(
-        510, 500, 30, load_image('hero.png', -1), 60, 0, '12', group
-    )
+    map_room = room.get_map()
+    player = Player(map_room.get_object_by_name('player'), room, group)
+    for i in map_room.objects:
+        if i.type == 'player':
+            continue
+        Mob(i, room, group)
+
     clock = pygame.time.Clock()
     running = True
     while running:
@@ -474,21 +85,21 @@ def main():
                     event.key == pygame.K_ESCAPE
             ):
                 running = False
-        keys = pygame.key.get_pressed()
-        if keys[pygame.K_w]:
-            player.move(room, (0, -1))
-        if keys[pygame.K_a]:
-            player.move(room, (-1, 0))
-        if keys[pygame.K_s]:
-            player.move(room, (0, 1))
-        if keys[pygame.K_d]:
-            player.move(room, (1, 0))
+            elif event.type == pygame.KEYDOWN:
+                if event.key == pygame.K_UP:
+                    player.move((0, -1))
+                elif event.key == pygame.K_DOWN:
+                    player.move((0, 1))
+                elif event.key == pygame.K_LEFT:
+                    player.move((-1, 0))
+                elif event.key == pygame.K_RIGHT:
+                    player.move((1, 0))
+                group.update(player)
         main_screen.fill('black')
         player_screen.fill('black')
         room.draw(player_screen)
         group.draw(player_screen)
-        main_screen.blit(player_screen, (0, 0),
-                         player.get_screen_player(*player_screen.get_size()))
+        main_screen.blit(player_screen, (0, 0), player.get_screen_player(*player_screen.get_size()))
         pygame.display.flip()
         clock.tick(const.FPS)
     pygame.quit()
