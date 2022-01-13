@@ -104,6 +104,7 @@ class InterfaceWindow(InterfaceElement, UIWindow):
             manager=manager,
             **kwargs
         )
+        self.size_cell = manager.size_cell
 
 
 class InterfaceScreenSpaceHealthBar(InterfaceElement, UIScreenSpaceHealthBar):
@@ -121,6 +122,23 @@ class InterfaceScreenSpaceHealthBar(InterfaceElement, UIScreenSpaceHealthBar):
         )
 
 
+class InterfacePanel(InterfaceElement, UIPanel):
+    def __init__(
+            self,
+            position: tuple[int | float, int | float] | list[float | int],
+            size: tuple[int | float, int | float] | list[float | int],
+            manager: Interface,
+            starting_layer_height=1,
+            **kwargs
+    ):
+        super().__init__(
+            relative_rect=create_rect(position, size, manager),
+            manager=manager,
+            starting_layer_height=starting_layer_height,
+            **kwargs
+        )
+
+
 def create_rect(
         position: tuple[int | float, int | float] | list[float | int],
         size: tuple[int | float, int | float] | list[float | int],
@@ -129,11 +147,11 @@ def create_rect(
     size_cell = manager.size_cell
     return pygame.Rect(
         (
-            size_cell[0] * position[0],
-            size_cell[1] * position[1]
+            size_cell[1] * position[1],
+            size_cell[0] * position[0]
         ),
         (
-            size_cell[0] * size[0],
-            size_cell[1] * size[1]
+            size_cell[1] * size[1],
+            size_cell[0] * size[0]
         )
     )

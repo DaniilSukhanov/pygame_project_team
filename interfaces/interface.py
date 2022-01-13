@@ -19,8 +19,8 @@ class Interface(pygame_gui.UIManager):
         self.cols = count_cols
         # размер клетки.
         self.size_cell = (
-            size_window[0] / count_rows,
-            size_window[1] / count_cols
+            size_window[1] / count_rows,
+            size_window[0] / count_cols
         )
         self.disable = False
 

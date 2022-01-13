@@ -2,6 +2,7 @@ import pygame
 import pytmx
 from levels import Room
 import const
+import interfaces
 
 
 class Entity(pygame.sprite.Sprite):
@@ -63,6 +64,8 @@ class Player(Entity):
                          room,
                          *groups)
         self.current_weapon = None
+        self.health_capacity = 100
+        self.current_health = 100
 
     def get_screen_player(self, width, height):
         x, y = self.rect.center
@@ -72,10 +75,14 @@ class Player(Entity):
         )
         return screen_player
 
+    def start_battle(self, mob, game):
+        interfaces.templates.InterfaceBattle(game.battle_interface, game, mob, self)
+
 
 class Item(Entity):
     def __init__(self, object_tmx, room, *groups):
         super().__init__(object_tmx, room, *groups)
+        self.damage = 20
 
     def update(self, player):
         coord_player = self.room.convert_coord(*player.rect.topleft)
@@ -88,12 +95,14 @@ class Item(Entity):
 class Mob(Entity):
     def __init__(self, object_tmx, room: Room, *groups):
         super().__init__(object_tmx, room, *groups)
+        self.health_capacity = 100
+        self.current_health = 100
 
-    def update(self, player):
+    def update(self, player, game):
         coord_player = self.room.convert_coord(*player.rect.topleft)
         coord_mob = self.room.convert_coord(*self.rect.topleft)
         if coord_player[0] == coord_mob[0] and coord_player[1] == coord_mob[1]:
-            self.kill()
+            player.start_battle(self, game)
 
 
 class NPC(Entity):

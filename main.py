@@ -4,36 +4,9 @@ import pygame
 import const
 from entitys import Mob, Player
 from levels import Room
-
-
-class GroupContainer:
-    """Класс написан на паттерне Singleton."""
-    __instance = None
-    __groups = {}
-
-    def __new__(cls):
-        if not hasattr(cls, '__instance'):
-            cls.__instance = super(GroupContainer, cls).__new__(cls)
-        return cls.__instance
-
-    def draw_group(self, screen, key):
-        self.__groups[key].draw(screen)
-
-    def add_group(self, key, group):
-        self.__groups[key] = group
-
-    def remove_group(self, key):
-        del self.__groups[key]
-
-    def get_group(self, key):
-        return self.__groups[key]
-
-    def get_all_groups(self):
-        return self.__groups.values()
-
-    def draw(self, screen):
-        for group in self.__groups.values():
-            group.draw(screen)
+import pygame_gui
+from interfaces.interface import Interface
+from interfaces.templates import *
 
 
 class SpritesGroup(pygame.sprite.Group):
@@ -63,47 +36,73 @@ def load_image(name: str, colorkey=None):
     return image
 
 
-def main():
-    pygame.init()
-    main_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-    player_screen = pygame.Surface(main_screen.get_size())
-    room = Room('data/templates_maps/map2.tmx')
-    group = SpritesGroup()
-    map_room = room.get_map()
-    player = Player(map_room.get_object_by_name('player'), room, group)
-    for i in map_room.objects:
-        if i.type == 'player':
-            continue
-        Mob(i, room, group)
+class Game:
+    def __init__(self):
+        self.main_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
+        self.main_interface = Interface(
+            self.main_screen.get_size(), 10, 10
+        )
+        self.battle_interface = Interface(
+            self.main_screen.get_size(), 20, 20
+        )
+        self.__cycle()
 
-    clock = pygame.time.Clock()
-    running = True
-    while running:
-        for event in pygame.event.get():
-            if event.type == pygame.QUIT or (
-                    event.type == pygame.KEYDOWN and
-                    event.key == pygame.K_ESCAPE
-            ):
-                running = False
-            elif event.type == pygame.KEYDOWN:
-                if event.key == pygame.K_UP:
-                    player.move((0, -1))
-                elif event.key == pygame.K_DOWN:
-                    player.move((0, 1))
-                elif event.key == pygame.K_LEFT:
-                    player.move((-1, 0))
-                elif event.key == pygame.K_RIGHT:
-                    player.move((1, 0))
-                group.update(player)
-        main_screen.fill('black')
-        player_screen.fill('black')
-        room.draw(player_screen)
-        group.draw(player_screen)
-        main_screen.blit(player_screen, (0, 0), player.get_screen_player(*player_screen.get_size()))
-        pygame.display.flip()
-        clock.tick(const.FPS)
-    pygame.quit()
+    def __cycle(self):
+        player_screen = pygame.Surface(self.main_screen.get_size())
+        room = Room('data/templates_maps/map1.tmx')
+        group1 = SpritesGroup()
+        group2 = SpritesGroup()
+        map_room = room.get_map()
+        player = Player(map_room.get_object_by_name('player'), room, group1)
+        InterfaceStartGame(self.main_interface, self.main_screen)
+        InterfacePlayer(self.main_interface, player)
+        for i in map_room.objects:
+            if i.type == 'player':
+                continue
+            Mob(i, room, group2)
+        clock = pygame.time.Clock()
+        running = True
+        while running:
+            time_delta = clock.tick(const.FPS) / 1000
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT or (
+                        event.type == pygame.KEYDOWN and
+                        event.key == pygame.K_ESCAPE
+                ):
+                    running = False
+                elif event.type == pygame.KEYDOWN:
+                    if event.key == pygame.K_UP:
+                        player.move((0, -1))
+                    elif event.key == pygame.K_DOWN:
+                        player.move((0, 1))
+                    elif event.key == pygame.K_LEFT:
+                        player.move((-1, 0))
+                    elif event.key == pygame.K_RIGHT:
+                        player.move((1, 0))
+                    group1.update(player)
+                    group2.update(player, self)
+                self.main_interface.event_elements(event)
+                self.battle_interface.event_elements(event)
+
+            self. main_screen.fill('black')
+            player_screen.fill('black')
+            room.draw(player_screen)
+            group1.draw(player_screen)
+            group2.draw(player_screen)
+            self.main_interface.update(time_delta)
+            self.battle_interface.update(time_delta)
+
+            self.main_screen.blit(
+                player_screen, (0, 0), player.get_screen_player(
+                    *player_screen.get_size()
+                )
+            )
+            self.main_interface.draw_ui(self.main_screen)
+            self.battle_interface.draw_ui(self.main_screen)
+            pygame.display.flip()
+        pygame.quit()
 
 
 if __name__ == '__main__':
-    main()
+    pygame.init()
+    Game()
