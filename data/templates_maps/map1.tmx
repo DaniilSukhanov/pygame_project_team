@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="3">
+ <tileset firstgid="1" source="tmw_desert_spacing.tsx"/>
+ <layer id="1" name="Слой тайлов 1" width="50" height="50">
+  <data encoding="base64" compression="zlib">
+   eJztwwEJAAAMBKFL8v1jLsdAwVVTVVVVVVVVVVXV5w/MMyUI
+  </data>
+ </layer>
+ <objectgroup id="2" name="Слой объектов 1">
+  <object id="1" name="player" type="player" gid="40" x="566.526" y="635.629" width="32" height="32"/>
+  <object id="2" name="mob" type="mob" gid="32" x="478" y="530" width="32" height="32"/>
+ </objectgroup>
+</map>
