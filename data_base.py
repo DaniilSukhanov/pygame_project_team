@@ -70,6 +70,14 @@ class DataBase:
             ).fetchall()
         return result
 
+    def get_items(self):
+        result = self.cur.execute(
+            """
+            SELECT name, image, damage FROM items
+            """
+        ).fetchall()
+        return result
+
 
 class Parse:
     def __init__(self, filename):

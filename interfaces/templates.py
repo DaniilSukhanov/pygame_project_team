@@ -3,23 +3,69 @@ import pygame_gui
 from interfaces.elements import *
 from entitys import Player, Mob
 import const
+from levels import Level
 
 
 class InterfaceTeleport:
-    def __init__(self, manager: Interface):
-        self.button = InterfaceButton(
-            (1, 1),
-            (1, 1),
+    def __init__(self, manager: Interface, game, player: Player):
+        self.level = game.level
+        self.game = game
+        game.stop_game = True
+        self.player = player
+        self.window = InterfaceWindow(
+            (0, 0),
+            (10, 10),
             manager
         )
-        self.button.add_function(
+        self.button_up = InterfaceButton(
+            (0, 1),
+            (1, 1),
+            manager,
+            text='UP',
+            container=self.window
+        )
+        self.button_up.add_function(
             pygame_gui.UI_BUTTON_PRESSED,
-            self.__press
+            lambda _: self.press(-1, 0)
+        )
+        self.button_down = InterfaceButton(
+            (1, 1),
+            (1, 1),
+            manager,
+            text='DOWN',
+            container=self.window
+        )
+        self.button_down.add_function(
+            pygame_gui.UI_BUTTON_PRESSED,
+            lambda _: self.press(1, 0)
+        )
+        self.button_left = InterfaceButton(
+            (1, 0),
+            (1, 1),
+            manager,
+            text='LEFT',
+            container=self.window
+        )
+        self.button_left.add_function(
+            pygame_gui.UI_BUTTON_PRESSED,
+            lambda _: self.press(0, -1)
+        )
+        self.button_right = InterfaceButton(
+            (1, 2),
+            (1, 1),
+            manager,
+            text='RIGHT',
+            container=self.window
+        )
+        self.button_right.add_function(
+            pygame_gui.UI_BUTTON_PRESSED,
+            lambda _: self.press(0, 1)
         )
 
-    @staticmethod
-    def __press(interface_element):
-        print(123)
+    def press(self, k_row, k_col):
+        self.level.displace_current_room(k_row, k_col)
+        room = self.level.get_current_room()
+        self.player.update_property(room.get_map().get_object_by_name('player'), room, *self.player.groups())
 
 
 class InterfacePlayer:
@@ -40,6 +86,8 @@ class InterfaceBattle:
             player: Player,
             mob: Mob
     ):
+        self.game = game
+        self.game.stop_game = True
         self.window = InterfaceWindow(
             (2, 1),
             (15, 15),
@@ -64,9 +112,14 @@ class InterfaceBattle:
             lambda _: self.attack(mob, player)
         )
 
-    @staticmethod
-    def attack(recipient: Player | Mob, sender: Player | Mob):
-        recipient.current_health -= 1
+    def attack(self, recipient: Player | Mob, sender: Player | Mob):
+        recipient.current_health -= sender.current_weapon.damage
+        if recipient.current_health <= 0:
+            self.window.kill()
+            recipient.kill()
+            self.game.stop_game = False
+        if type(recipient) == Mob:
+            self.attack(sender, recipient)
 
 
 class InterfaceStartGame:
@@ -100,6 +153,21 @@ class InterfaceStartGame:
 
     def clock(self, _):
         self.running = False
+
+
+class InterfaceGameOver:
+    def __init__(self, manager):
+        self.panel = InterfacePanel(
+            (0, 0),
+            (20, 20),
+            manager
+        )
+        self.label = InterfaceLabel(
+            (10, 8),
+            (10, 12),
+            manager,
+            container=self.panel
+        )
 
 
 

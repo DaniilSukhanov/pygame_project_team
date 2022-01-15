@@ -1,12 +1,17 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="2" nextobjectid="1">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="30" height="30" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="4">
  <properties>
   <property name="type" value="None"/>
  </properties>
  <tileset firstgid="1" source="tmw_desert_spacing.tsx"/>
  <layer id="1" name="Слой тайлов 1" width="30" height="30">
   <data encoding="base64" compression="zlib">
-   eJztld0KwzAIhbPtat1V1/u+/2M2Fw2ImBOPlg5GBKG01c/4l1J+L4vSO7n7qVFuJG7NZc/f/pP2LFcrikG+1zZeLmJb/nq8TK69Z+99Z8Ty9aj6rPpSvlFM0hfTH9L3+3z+GJxeTDp+pi+b3Vr1W3UzuCgmNu+eGjdFMUX6GrGs3I767wruKLfRXYtmxJPb7G5n6pydX83V52ZrmxHJ9cxNts4WF9XWs8MYJuox675EdwXDHLG8tpk5jsQd2R9R2ylTpvyvHKnyG70=
+   eJztlc0Kw0AIhDftKemp7T3v/5jdQxdEXJ3RllLYASEk6Of6szlba2dg39AvmBE3o0NYlns0PI5kSt8MF81Bvtc+kVC+jjfjoTUabB0DOfvsOyMr1tbt0u2qYns5yVjMfMjY+/v5ZnBmOen8mbkcfvduj25Pg+vlxNYd6fEwLyfmrAjXqm00f5/gRrVleZI72xGktizP4jP3SWV/NVefm+1tRZKL7E21zxbX6y1yhzFMb8b0Xej9m5h98u59L1b2vzh8KzWzapD1q87o0tLS/+sFz+IfaQ==
   </data>
  </layer>
+ <objectgroup id="2" name="Слой объектов 1">
+  <object id="1" name="player" type="player" gid="40" x="7.99978" y="45.4122" width="32" height="32"/>
+  <object id="2" name="teleport" type="teleport" gid="46" x="7.21541" y="112.824" width="32" height="32"/>
+  <object id="3" name="mob" type="mob" gid="31" x="94.6667" y="85.3333" width="32" height="32"/>
+ </objectgroup>
 </map>

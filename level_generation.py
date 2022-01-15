@@ -1,7 +1,7 @@
 import random
 
 from data_base import DataBase
-from main import Room
+from levels import Room
 
 
 class Generator:

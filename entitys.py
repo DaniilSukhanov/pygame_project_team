@@ -52,6 +52,9 @@ class Entity(pygame.sprite.Sprite):
             return
         self.rect.move_ip(k_x, k_y)
 
+    def update_property(self, object_tmx, room, *group):
+        self.__init__(object_tmx, room, *group)
+
 
 class Player(Entity):
     def __init__(
@@ -76,7 +79,7 @@ class Player(Entity):
         return screen_player
 
     def start_battle(self, mob, game):
-        interfaces.templates.InterfaceBattle(game.battle_interface, game, mob, self)
+        interfaces.templates.InterfaceBattle(game.battle_interface, game, self, mob)
 
 
 class Item(Entity):
@@ -97,6 +100,7 @@ class Mob(Entity):
         super().__init__(object_tmx, room, *groups)
         self.health_capacity = 100
         self.current_health = 100
+        self.current_weapon = None
 
     def update(self, player, game):
         coord_player = self.room.convert_coord(*player.rect.topleft)
@@ -109,6 +113,12 @@ class NPC(Entity):
     def __init__(self, object_tmx, room: Room, *groups):
         super().__init__(object_tmx, room, *groups)
         self.interface = None
+
+    def update(self, player, game):
+        coord_player = self.room.convert_coord(*player.rect.topleft)
+        coord_mob = self.room.convert_coord(*self.rect.topleft)
+        if coord_player[0] == coord_mob[0] and coord_player[1] == coord_mob[1]:
+            interfaces.templates.InterfaceTeleport(game.battle_interface, game, player)
 
     def set_interface(self, interface):
         self.interface = interface
