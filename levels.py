@@ -128,7 +128,7 @@ class Level:
         self.__count_rows = count_rows
         self.__count_cols = count_cols
         # Координаты текущей комнаты.
-        self.__coord_current_room = None
+        self.__coord_current_room = (0, 0)
 
     def set_matrix(
             self,
@@ -194,7 +194,10 @@ class Level:
                 f'Переданный тип значения в аргументе col не int,'
                 f' а {type(col)}'
             )
-        if row in range(self.__count_rows) and col in range(self.__count_cols):
+        if not (
+                row in range(self.__count_rows) and
+                col in range(self.__count_cols)
+        ):
             raise ValueError(
                 f'Переданные координаты ({row}, {col}) не попадают в диапазон'
                 f'(0 <= row < {self.__count_rows},'
