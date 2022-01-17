@@ -1,7 +1,8 @@
 import random
+import os
 
 from data_base import DataBase
-from main import Room
+from levels import Room
 
 
 class Generator:
@@ -66,5 +67,10 @@ class Generator:
     def __random_room(type_room: str | None = None):
         """Получить случайную комнату."""
         data_base = DataBase('data_base.sqlite')
-        rooms = data_base.get_rooms_by_type(type_room)
-        return Room(*random.choice(rooms))
+        while True:
+            rooms = data_base.get_rooms_by_type(type_room)
+            path_room = random.choice(rooms)[0]
+            if os.path.isfile(path_room):
+                break
+            data_base.delete_room(path_room)
+        return Room(path_room)

@@ -1,13 +1,22 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="50" height="50" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="3">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="20" height="20" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="10">
+ <properties>
+  <property name="type" value="battle"/>
+ </properties>
  <tileset firstgid="1" source="tmw_desert_spacing.tsx"/>
- <layer id="1" name="Слой тайлов 1" width="50" height="50">
+ <layer id="1" name="Слой тайлов 1" width="20" height="20">
   <data encoding="base64" compression="zlib">
-   eJztwwEJAAAMBKFL8v1jLsdAwVVTVVVVVVVVVVXV5w/MMyUI
+   eJzjYmBg4KIylqMSRjZPBIhFcagjVg7ZPBkglsWhh1g5Wvp31LzR9DKc4mOwmzeS0gs1MQDKgygr
   </data>
  </layer>
  <objectgroup id="2" name="Слой объектов 1">
-  <object id="1" name="player" type="player" gid="40" x="566.526" y="635.629" width="32" height="32"/>
-  <object id="2" name="mob" type="mob" gid="32" x="478" y="530" width="32" height="32"/>
+  <object id="1" name="mob" type="mob" gid="31" x="210" y="202" width="32" height="32"/>
+  <object id="2" name="mob" type="mob" gid="31" x="432" y="320" width="32" height="32"/>
+  <object id="3" name="mob" type="mob" gid="31" x="180" y="448" width="32" height="32"/>
+  <object id="4" name="mob" type="mob" gid="31" x="430" y="454" width="32" height="32"/>
+  <object id="5" name="teleport" type="teleport" gid="46" x="402" y="116" width="32" height="32"/>
+  <object id="7" name="player" type="player" gid="40" x="180" y="300" width="32" height="32"/>
+  <object id="8" gid="40" x="444" y="540" width="32" height="32"/>
+  <object id="9" name="shop" type="shop" gid="39" x="302" y="434" width="32" height="32"/>
  </objectgroup>
 </map>

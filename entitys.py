@@ -1,3 +1,5 @@
+import random
+
 import pygame
 import pytmx
 from levels import Room
@@ -48,9 +50,14 @@ class Entity(pygame.sprite.Sprite):
         coord = self.room.convert_coord(*new_rect.topleft)
         if not self.room.check_correct_row_col(*coord):
             return
-        if self.room.get_tile_properties(*coord)['type'] == const.TYPE_BLOCK_WALL:
+        if self.room.get_tile_properties(*coord)['type'] == const.\
+                TYPE_BLOCK_WALL:
             return
         self.rect.move_ip(k_x, k_y)
+
+    def update_property(self, object_tmx, room, *group):
+        """Обновляет свойства."""
+        self.__init__(object_tmx, room, *group)
 
 
 class Player(Entity):
@@ -65,9 +72,11 @@ class Player(Entity):
                          *groups)
         self.current_weapon = None
         self.health_capacity = 100
-        self.current_health = 100
+        self.current_health = self.health_capacity
+        self.money = 0
 
     def get_screen_player(self, width, height):
+        """Получение прямоугольника видимости игрока."""
         x, y = self.rect.center
         screen_player = pygame.Rect(
             (x - width / 2, y - height / 2),
@@ -76,27 +85,17 @@ class Player(Entity):
         return screen_player
 
     def start_battle(self, mob, game):
-        interfaces.templates.InterfaceBattle(game.battle_interface, game, mob, self)
-
-
-class Item(Entity):
-    def __init__(self, object_tmx, room, *groups):
-        super().__init__(object_tmx, room, *groups)
-        self.damage = 20
-
-    def update(self, player):
-        coord_player = self.room.convert_coord(*player.rect.topleft)
-        coord_mob = self.room.convert_coord(*self.rect.topleft)
-        if coord_player[0] == coord_mob[0] and coord_player[1] == coord_mob[1]:
-            player.current_weapon = self
-            self.kill()
+        interfaces.templates.InterfaceBattle(
+            game.battle_interface, game, self, mob
+        )
 
 
 class Mob(Entity):
     def __init__(self, object_tmx, room: Room, *groups):
         super().__init__(object_tmx, room, *groups)
-        self.health_capacity = 100
-        self.current_health = 100
+        self.health_capacity = random.randint(10, 50)
+        self.current_health = self.health_capacity
+        self.current_weapon = None
 
     def update(self, player, game):
         coord_player = self.room.convert_coord(*player.rect.topleft)
@@ -110,11 +109,11 @@ class NPC(Entity):
         super().__init__(object_tmx, room, *groups)
         self.interface = None
 
-    def set_interface(self, interface):
-        self.interface = interface
-
-    def display_interface(self, manager):
-        self.interface(manager)
+    def update(self, player, game):
+        coord_player = self.room.convert_coord(*player.rect.topleft)
+        coord_mob = self.room.convert_coord(*self.rect.topleft)
+        if coord_player[0] == coord_mob[0] and coord_player[1] == coord_mob[1]:
+            self.interface(game.battle_interface, game, player)
 
 
 

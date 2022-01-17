@@ -59,11 +59,6 @@
   <objectgroup draworder="index" id="3">
    <object id="5" x="0" y="0" width="32" height="14.8425"/>
   </objectgroup>
-  <animation>
-   <frame tileid="29" duration="100"/>
-   <frame tileid="30" duration="100"/>
-   <frame tileid="31" duration="100"/>
-  </animation>
  </tile>
  <tile id="10">
   <properties>

@@ -1,10 +1,11 @@
 import os
 import sqlite3
-from bs4 import BeautifulSoup
+import pytmx
 
 
 class DataBase:
     def __new__(cls, *args, **kwargs):
+        """Паттерн Singleton."""
         if not hasattr(cls, 'instance'):
             cls.instance = super().__new__(cls)
         return cls.instance
@@ -28,8 +29,7 @@ class DataBase:
                     WHERE path_template_room = ?
                     """, (path_file,)
                 ).fetchone()
-                parser = Parse(path_file)
-                properties = parser.get_properties()
+                room = pytmx.load_pygame(path_file)
                 if result is None:
                     self.cur.execute(
                         """
@@ -38,11 +38,21 @@ class DataBase:
                             width_template_room, height_template_room
                         ) VALUES (?, ?, ?, ?)
                         """, (
-                            properties['type'], path_file,
-                            properties['width'], properties['height']
+                            room.properties['type'], path_file,
+                            room.width, room.height
                         )
                     )
                     self.con.commit()
+
+    def delete_room(self, path):
+        """Удаляет комнату по пути."""
+        self.cur.execute(
+            """
+            DELETE from templates_rooms WHERE path_template_room = ?
+            """,
+            (path,)
+        )
+        self.con.commit()
 
     def load_save(self, name: str, save):
         """Загружает в базу данных сохранение."""
@@ -56,6 +66,7 @@ class DataBase:
         self.con.commit()
 
     def get_rooms_by_type(self, type_room: str | None = None):
+        """Получить комнату по типу."""
         if type_room is not None:
             result = self.cur.execute(
                 """
@@ -70,28 +81,11 @@ class DataBase:
             ).fetchall()
         return result
 
-
-class Parse:
-    def __init__(self, filename):
-        self.soup = BeautifulSoup(
-            open(filename).read(), 'lxml'
-        )
-
-    def get_properties(self) -> dict:
-        """Возвращает словарь с нужными свойствами карты."""
-        result = {}
-        properties = self.soup.find('properties')
-        properties = filter(
-            lambda element: element['name'] == 'type',
-            properties.find_all('property')
-        )
-        for i in properties:
-            result[i['name']] = i['value']
-        map_tag = self.soup.find('map')
-        result['width'] = map_tag['width']
-        result['height'] = map_tag['height']
+    def get_items(self):
+        """Получить предметы."""
+        result = self.cur.execute(
+            """
+            SELECT name, image, damage FROM items
+            """
+        ).fetchall()
         return result
-
-
-data_base = DataBase('data_base.sqlite')
-data_base.load_templates_rooms()
