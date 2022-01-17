@@ -1,5 +1,6 @@
-from entitys import Mob, Player, NPC
-from levels import Room
+import data_base
+from entitys import NPC
+from levels import Room, Level
 from interfaces.templates import *
 from level_generation import Generator
 from items import RandomizerItems
@@ -16,10 +17,12 @@ class SpritesGroup(pygame.sprite.Group):
                 sprite.update(*args, **kwargs)
 
     def clear_all(self):
+        """Убивает все существ в группе."""
         for sprite in self.sprites():
             sprite.kill()
 
     def set_new_room(self, room: Room):
+        """Ставит группе новую комнату."""
         for sprite in self.sprites():
             sprite.room = room
 
@@ -27,8 +30,8 @@ class SpritesGroup(pygame.sprite.Group):
 class Game:
     def __init__(self):
         self.main_screen = pygame.display.set_mode((0, 0), pygame.FULLSCREEN)
-        self.game_over = False
-        self.stop_game = False
+        db = data_base.DataBase('data_base.sqlite')
+        db.load_templates_rooms()
         self.state = 'start'
         self.main_interface = Interface(
             self.main_screen.get_size(), 10, 10
@@ -44,7 +47,7 @@ class Game:
         self.__cycle()
 
     def __cycle(self):
-
+        """Основной цикл."""
         clock = pygame.time.Clock()
         running = True
         while running:
@@ -59,10 +62,14 @@ class Game:
                 group_player = SpritesGroup()
                 group_mob = SpritesGroup()
                 group_npc = SpritesGroup()
-                player = Player(room.get_map().get_object_by_name('player'), room,
-                                group_player)
+                player = Player(
+                    room.get_map().get_object_by_name('player'), room,
+                    group_player
+                )
                 player.current_weapon = self.randomizer.get_item()
-                self.interface_player = InterfacePlayer(self.main_interface, player)
+                self.interface_player = InterfacePlayer(
+                    self.main_interface, player
+                )
                 self.state = 'game'
                 continue
             if self.state == 'game' and player.current_health <= 0:

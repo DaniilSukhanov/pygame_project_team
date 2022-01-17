@@ -194,7 +194,10 @@ class Level:
                 f'Переданный тип значения в аргументе col не int,'
                 f' а {type(col)}'
             )
-        if not (row in range(self.__count_rows) and col in range(self.__count_cols)):
+        if not (
+                row in range(self.__count_rows) and
+                col in range(self.__count_cols)
+        ):
             raise ValueError(
                 f'Переданные координаты ({row}, {col}) не попадают в диапазон'
                 f'(0 <= row < {self.__count_rows},'

@@ -1,4 +1,3 @@
-import pygame
 import data_base
 from load_image import load_image
 import random

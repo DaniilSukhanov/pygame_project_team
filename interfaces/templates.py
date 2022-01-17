@@ -1,10 +1,8 @@
-import pygame
 import pygame_gui
 from interfaces.elements import *
 from entitys import Player, Mob
 import const
 import random
-from levels import Level
 from load_image import load_image
 from items import RandomizerItems
 
@@ -13,7 +11,6 @@ class InterfaceTeleport:
     def __init__(self, manager: Interface, game, player: Player):
         self.level = game.level
         self.game = game
-        game.stop_game = True
         self.player = player
         self.window = InterfaceWindow(
             (0, 0),
@@ -69,7 +66,10 @@ class InterfaceTeleport:
         self.level.displace_current_room(k_row, k_col)
         room = self.level.get_current_room()
         weapon = self.player.current_weapon
-        self.player.update_property(room.get_map().get_object_by_name('player'), room, *self.player.groups())
+        self.player.update_property(
+            room.get_map().get_object_by_name('player'),
+            room, *self.player.groups()
+        )
         self.player.current_weapon = weapon
 
 
@@ -104,7 +104,6 @@ class InterfaceBattle:
             mob: Mob
     ):
         self.game = game
-        self.game.stop_game = True
         self.window = InterfaceWindow(
             (2, 1),
             (10, 4.5),
@@ -203,11 +202,12 @@ class InterfaceBattle:
         if recipient.current_health <= 0:
             self.window.kill()
             recipient.kill()
-            self.game.stop_game = False
             if type(sender) == Player:
                 self.game.count_kills += 1
                 sender.money += random.randint(1, 10)
-                self.game.interface_player.count_coin.set_text(str(sender.money))
+                self.game.interface_player.count_coin.set_text(
+                    str(sender.money)
+                )
         if type(recipient) == Mob:
             self.attack(sender, recipient)
 
@@ -294,7 +294,6 @@ class InterfaceShop:
             manager
         )
         self.game = game
-        game.stop_game = True
         self.player = player
         randomizer = RandomizerItems('data_base.sqlite')
         items = tuple(
@@ -364,6 +363,9 @@ class InterfaceShop:
         if self.player.money >= price:
             self.player.current_weapon = item
             self.player.money -= price
+            self.game.interface_player.count_coin.set_text(
+                str(self.player.money)
+            )
 
 
 
