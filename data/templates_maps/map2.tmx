@@ -252,12 +252,12 @@
  <tileset firstgid="49" source="tmw_desert_spacing.tsx"/>
  <layer id="1" name="Слой тайлов 1" width="12" height="8">
   <data encoding="base64" compression="zlib">
-   eJzzY2Bg8INiLiKwHIWYVPMGm3pSzSOEAVj5CO0=
+   eJyzYmBgsCIDyxGJ0dWSas5AqifVn+RgAFjEEEk=
   </data>
  </layer>
  <objectgroup id="2" name="Слой объектов 1">
-  <object id="6" name="player" type="player" gid="88" x="17.215" y="50.3597" width="32" height="32"/>
-  <object id="7" name="mob" type="mob" gid="79" x="17.0737" y="106.003" width="32" height="32"/>
-  <object id="8" name="teleport" type="teleport" gid="94" x="81.7099" y="77.069" width="32" height="32"/>
+  <object id="6" name="player" type="player" gid="88" x="53.2134" y="119.785" width="32" height="32"/>
+  <object id="7" name="mob" type="mob" gid="79" x="297.347" y="97.0034" width="32" height="32"/>
+  <object id="8" name="teleport" type="teleport" gid="94" x="276.487" y="177.993" width="32" height="32"/>
  </objectgroup>
 </map>

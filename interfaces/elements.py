@@ -139,6 +139,23 @@ class InterfacePanel(InterfaceElement, UIPanel):
         )
 
 
+class InterfaceImage(InterfaceElement, UIImage):
+    def __init__(
+            self,
+            position: tuple[int | float, int | float] | list[float | int],
+            size: tuple[int | float, int | float] | list[float | int],
+            manager: Interface,
+            image: pygame.Surface,
+            **kwargs
+    ):
+        super().__init__(
+            relative_rect=create_rect(position, size, manager),
+            manager=manager,
+            image_surface=image,
+            **kwargs
+        )
+
+
 def create_rect(
         position: tuple[int | float, int | float] | list[float | int],
         size: tuple[int | float, int | float] | list[float | int],

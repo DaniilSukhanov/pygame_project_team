@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="4">
+<map version="1.5" tiledversion="1.7.2" orientation="orthogonal" renderorder="right-down" width="8" height="8" tilewidth="32" tileheight="32" infinite="0" nextlayerid="3" nextobjectid="5">
  <properties>
   <property name="type" value="event"/>
  </properties>
  <tileset firstgid="1" source="tmw_desert_spacing.tsx"/>
  <layer id="1" name="Слой тайлов 1" width="8" height="8">
   <data encoding="base64" compression="zlib">
-   eJyTY2BgkKMT5oJicuWpYTc6BgCg/Qa5
+   eJzjYmBg4CICy6FhXOL4MCE92OQJ2YHPjejy2DAArc4FUQ==
   </data>
  </layer>
  <objectgroup id="2" name="Слой объектов 1">
-  <object id="1" name="player" type="player" gid="40" x="10.6131" y="45.5054" width="32" height="32"/>
-  <object id="2" name="teleport" type="teleport" gid="46" x="25.6556" y="156.587" width="32" height="32"/>
-  <object id="3" name="mob" type="mob" gid="31" x="82.3528" y="61.1266" width="32" height="32"/>
+  <object id="1" name="player" type="player" gid="40" x="208.476" y="209.234" width="32" height="32"/>
+  <object id="2" name="teleport" type="teleport" gid="46" x="20.4487" y="145.595" width="32" height="32"/>
+  <object id="3" name="mob" type="mob" gid="31" x="203.269" y="148.487" width="32" height="32"/>
+  <object id="4" name="shop" type="shop" gid="39" x="85.2455" y="80.7971" width="32" height="32"/>
  </objectgroup>
 </map>

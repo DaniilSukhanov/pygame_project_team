@@ -1,5 +1,6 @@
 import pygame
 import data_base
+from load_image import load_image
 import random
 
 
@@ -7,15 +8,15 @@ class Item:
     def __init__(
             self,
             name: str,
-            image: pygame.Surface,
+            image_filename: str,
             damage: int
     ):
         self.name = name
-        self.image = image
+        self.image = load_image(image_filename)
         self.damage = damage
 
     def __repr__(self):
-        return f'Item: "{self.name}", {self.image}, {self.damage}'
+        return f'Item ("{self.name}", {self.image}, {self.damage})'
 
 
 class RandomizerItems:

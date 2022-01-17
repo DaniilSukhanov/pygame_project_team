@@ -69,6 +69,7 @@ class Player(Entity):
         self.current_weapon = None
         self.health_capacity = 100
         self.current_health = 100
+        self.money = 5
 
     def get_screen_player(self, width, height):
         x, y = self.rect.center
@@ -80,19 +81,6 @@ class Player(Entity):
 
     def start_battle(self, mob, game):
         interfaces.templates.InterfaceBattle(game.battle_interface, game, self, mob)
-
-
-class Item(Entity):
-    def __init__(self, object_tmx, room, *groups):
-        super().__init__(object_tmx, room, *groups)
-        self.damage = 20
-
-    def update(self, player):
-        coord_player = self.room.convert_coord(*player.rect.topleft)
-        coord_mob = self.room.convert_coord(*self.rect.topleft)
-        if coord_player[0] == coord_mob[0] and coord_player[1] == coord_mob[1]:
-            player.current_weapon = self
-            self.kill()
 
 
 class Mob(Entity):
@@ -118,13 +106,7 @@ class NPC(Entity):
         coord_player = self.room.convert_coord(*player.rect.topleft)
         coord_mob = self.room.convert_coord(*self.rect.topleft)
         if coord_player[0] == coord_mob[0] and coord_player[1] == coord_mob[1]:
-            interfaces.templates.InterfaceTeleport(game.battle_interface, game, player)
-
-    def set_interface(self, interface):
-        self.interface = interface
-
-    def display_interface(self, manager):
-        self.interface(manager)
+            self.interface(game.battle_interface, game, player)
 
 
 
